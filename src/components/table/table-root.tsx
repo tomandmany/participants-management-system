@@ -5,7 +5,7 @@ import DraggableTableHead from "@/components/table/draggable-table-head";
 import { Plus } from "lucide-react";
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter, UniqueIdentifier } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
-import { useState, useCallback, useEffect } from "react";
+import { useState } from "react";
 import DraggableTableRow from "./draggable-table-row";
 import { usePathname } from "next/navigation";
 import config from "@/data/getColor";
@@ -38,17 +38,17 @@ export default function TableRoot({
 
   const { mainColor, subColor } = config[currentPath as keyof typeof config] || config.default;
 
-  const saveData = useCallback(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-  }, [columns, rows, cells]);
+  // const saveData = useCallback(async () => {
+  //   await new Promise((resolve) => setTimeout(resolve, 500));
+  // }, [columns, rows, cells]);
 
-  useEffect(() => {
-    const debounce = setTimeout(() => {
-      saveData();
-    }, 2000);
+  // useEffect(() => {
+  //   const debounce = setTimeout(() => {
+  //     saveData();
+  //   }, 2000);
 
-    return () => clearTimeout(debounce);
-  }, [columns, rows, cells, saveData]);
+  //   return () => clearTimeout(debounce);
+  // }, [columns, rows, cells, saveData]);
 
   const handleCellUpdate = (cellId: string, newValue: string) => {
     setCells((prev) =>
