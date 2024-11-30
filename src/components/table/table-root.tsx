@@ -7,8 +7,6 @@ import { Plus } from "lucide-react";
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter, UniqueIdentifier } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 import { useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
-import config from "@/data/getColor";
 import { createPortal } from "react-dom";
 import { restrictToHorizontalAxis, restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { updateCell } from "@/actions/updateCell";
@@ -16,12 +14,14 @@ import { insertRow } from "@/actions/insertRow";
 import { insertColumn } from "@/actions/insertColumn";
 
 interface DataTableProps {
+  currentTable: Table;
   initialColumns: Column[];
   initialRows: Row[];
   initialCells: Cell[];
 }
 
 export default function TableRoot({
+  currentTable,
   initialColumns,
   initialRows,
   initialCells,
@@ -35,11 +35,6 @@ export default function TableRoot({
 
   const [lockedColumnIds, setLockedColumnIds] = useState<string[]>([]);
   const [lockedRowIds, setLockedRowIds] = useState<string[]>([]);
-
-  const pathname = usePathname();
-  const currentPath = pathname.split('/')[2];
-
-  const { mainColor, subColor } = config[currentPath as keyof typeof config] || config.default;
 
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
 
@@ -82,13 +77,13 @@ export default function TableRoot({
       is_locked: row.is_locked ?? false, // null を false に変換
     }));
 
-    const newColumnId = await insertColumn(sanitizedRows);
+    const newColumnId = await insertColumn(sanitizedRows, currentTable.id);
 
     if (newColumnId) {
       console.log("New column inserted with ID:", newColumnId);
 
       // クライアント側の状態に新しい列と対応するセルを追加
-      const newColumn = { id: newColumnId, name: `New Column`, is_locked: false };
+      const newColumn = { id: newColumnId, name: `New Column`, is_locked: false, table_id: currentTable.id, };
       setColumns((prev) => [...prev, newColumn]);
 
       const newCells = rows.map((row) => ({
@@ -110,13 +105,13 @@ export default function TableRoot({
       is_locked: col.is_locked ?? false, // null を false に変換
     }));
 
-    const newRowId = await insertRow(sanitizedColumns);
+    const newRowId = await insertRow(sanitizedColumns, currentTable.id);
 
     if (newRowId) {
       console.log("New row inserted with ID:", newRowId);
 
       // ローカル状態に新しい行を追加
-      const newRow = { id: newRowId, is_locked: false };
+      const newRow = { id: newRowId, is_locked: false, table_id: currentTable.id, };
       setRows((prev) => [...prev, newRow]);
 
       // ローカル状態に新しいセルを追加
@@ -215,7 +210,7 @@ export default function TableRoot({
           <div className="flex">
             <div
               className="min-w-[92px] p-2 sticky left-0 z-10 shadow-locked-cell"
-              style={{ backgroundColor: mainColor }}
+              style={{ backgroundColor: currentTable.main_color }}
             />
             <DndContext
               id='columns'
@@ -229,7 +224,7 @@ export default function TableRoot({
                   <TableDraggableHead
                     key={column.id}
                     column={column}
-                    mainColor={mainColor}
+                    mainColor={currentTable.main_color}
                     lockedColumnIds={lockedColumnIds}
                     handleToggleColumnLock={handleToggleColumnLock}
                   />
@@ -241,7 +236,7 @@ export default function TableRoot({
                     {activeColumn ? (
                       <TableDraggableHead
                         column={activeColumn}
-                        mainColor={mainColor}
+                        mainColor={currentTable.main_color}
                         lockedColumnIds={lockedColumnIds}
                         handleToggleColumnLock={handleToggleColumnLock}
                       />
@@ -271,7 +266,7 @@ export default function TableRoot({
                   columns={columns}
                   setCells={setCells}
                   cells={cells.filter((cell) => cell.row_id === row.id)}
-                  subColor={subColor}
+                  subColor={currentTable.sub_color}
                   lockedColumnIds={lockedColumnIds}
                   lockedRowIds={lockedRowIds}
                   handleToggleRowLock={handleToggleRowLock}
@@ -288,7 +283,7 @@ export default function TableRoot({
                       columns={columns}
                       cells={cells.filter((cell) => cell.row_id === activeRow.id)}
                       setCells={setCells}
-                      subColor={subColor}
+                      subColor={currentTable.sub_color}
                       lockedColumnIds={lockedColumnIds}
                       lockedRowIds={lockedRowIds}
                       handleToggleRowLock={handleToggleRowLock}
@@ -306,7 +301,7 @@ export default function TableRoot({
         <Button
           className="p-3 w-fit h-fit shadow-md hover:shadow-lg z-10 fixed"
           style={{
-            backgroundColor: mainColor,
+            backgroundColor: currentTable.main_color,
             left: `${tableRect.left + tableRect.width / 2}px`,
             top: `${tableRect.bottom + 16}px`,
             transform: `translateX(-50%) scale(${isHoveredAddRowButton ? 1.15 : 1})`,
@@ -323,7 +318,7 @@ export default function TableRoot({
         <Button
           className="p-3 w-fit h-fit shadow-md hover:shadow-lg z-10 fixed"
           style={{
-            backgroundColor: mainColor,
+            backgroundColor: currentTable.main_color,
             left: `${tableRect.right + 16}px`,
             top: `${tableRect.top + tableRect.height / 2}px`,
             transform: `translateY(-50%) scale(${isHoveredAddColumnButton ? 1.15 : 1})`,

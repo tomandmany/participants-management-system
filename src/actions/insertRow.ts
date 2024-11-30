@@ -9,11 +9,11 @@ interface Column {
   is_locked: boolean;
 }
 
-export async function insertRow(columns: Column[]): Promise<string | null> {
+export async function insertRow(columns: Column[], currentTable_id: string): Promise<string | null> {
   // 新しい行を追加
   const { data: row, error: rowError } = await supabase
     .from("rows")
-    .insert({ is_locked: false })
+    .insert({ is_locked: false, table_id: currentTable_id }) // 必要に応じてロック状態を変更
     .select("id")
     .single();
 

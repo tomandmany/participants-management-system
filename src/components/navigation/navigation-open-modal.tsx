@@ -1,34 +1,34 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import NavigationLink from "@/components/navigation/navigation-link";
 import { ChevronDown, ChevronLeft } from "lucide-react";
-import { usePathname } from "next/navigation";
-import config from "@/data/getColor";
 
-// ページ名をマッピングするオブジェクト
-const pageName: Record<string, string> = {
-  participants: '参加団体',
-  booth: '模擬店',
-  stage: '屋外ステージ',
-  room: '教室',
-};
+interface NavigationOpenProps {
+  member_id: string;
+  tables: Table[];
+  currentTable: Table;
+}
 
-export default function NavigationOpenModal() {
+export default function NavigationOpenModal({ member_id, tables, currentTable }: NavigationOpenProps) {
   const [isNavigationOpenModal, setIsNavigationOpenModal] = useState(false);
-  const [currentPageName, setCurrentPageName] = useState("");
-
-  const pathname = usePathname();
-  const id = pathname.split('/')[1];
-  const currentPath = pathname.split('/')[2];
-
-  const { mainColor } = config[currentPath as keyof typeof config] || config.default;
+  const [currentTableName, setCurrentTableName] = useState<string>('');
+  const toggleButtonRef = useRef<HTMLDivElement>(null);
+  const [modalPosition, setModalPosition] = useState<number>(0);
 
   useEffect(() => {
     // ページ名をリアクティブに更新
-    setCurrentPageName(pageName[currentPath] || "");
+    setCurrentTableName(currentTable.name);
     setIsNavigationOpenModal(false);
-  }, [currentPath]);
+  }, [currentTable]);
+
+  useEffect(() => {
+    // トグルボタンの位置を取得してモーダルの位置を更新
+    if (toggleButtonRef.current) {
+      const rect = toggleButtonRef.current.getBoundingClientRect();
+      setModalPosition(rect.bottom + 16);
+    }
+  }, [isNavigationOpenModal]);
 
   return (
     <>
@@ -38,24 +38,25 @@ export default function NavigationOpenModal() {
           onClick={() => setIsNavigationOpenModal(false)}
         />
       )}
-      <div
-        className="flex flex-col relative mb-4"
-      >
+      <div className="flex flex-col relative mb-4">
         <div
           className="flex gap-2 w-fit text-nowrap bg-white shadow-md hover:shadow-lg p-4 rounded-lg cursor-pointer text-white font-black z-20 hover:translate-x-2 hover:-translate-y-1 hover:scale-[1.15] transition"
-          style={{ backgroundColor: mainColor }}
+          style={{ backgroundColor: currentTable.main_color }}
           onClick={() => setIsNavigationOpenModal(!isNavigationOpenModal)}
+          ref={toggleButtonRef}
         >
-          <span>{currentPageName}</span>
+          <span>{currentTableName}</span>
           {isNavigationOpenModal ? <ChevronDown size={24} /> : <ChevronLeft size={24} />}
         </div>
         <div
-          className={`${isNavigationOpenModal ? "opacity-100" : "opacity-0 pointer-events-none"} w-full grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto bg-gray-100 shadow-lg p-10 rounded-lg absolute z-20 top-[calc(56px+16px)] transition-opacity duration-150 ease-in-out`}
+          className={`${isNavigationOpenModal ? "opacity-100" : "opacity-0 pointer-events-none"} w-[70vw] grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-100 shadow-lg p-16 rounded-md absolute left-1/2 -translate-x-1/2 top-[calc(56px+16px)] z-20 transition-opacity duration-150 ease-in-out`}
+          // style={{
+          //   top: `${modalPosition}px`,
+          // }}
         >
-          <NavigationLink id={id} currentPath={currentPath} href="participants" title="参加団体" />
-          <NavigationLink id={id} currentPath={currentPath} href="booth" title="模擬店" />
-          <NavigationLink id={id} currentPath={currentPath} href="stage" title="屋外ステージ" />
-          <NavigationLink id={id} currentPath={currentPath} href="room" title="教室" />
+          {tables.map((table) => (
+            <NavigationLink key={table.id} member_id={member_id} table={table} currentTableId={currentTable.id} />
+          ))}
         </div>
       </div>
     </>

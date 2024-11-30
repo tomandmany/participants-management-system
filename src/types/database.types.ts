@@ -50,18 +50,29 @@ export type Database = {
           id: string
           is_locked: boolean | null
           name: string
+          table_id: string | null
         }
         Insert: {
           id?: string
           is_locked?: boolean | null
           name: string
+          table_id?: string | null
         }
         Update: {
           id?: string
           is_locked?: boolean | null
           name?: string
+          table_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "columns_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       members: {
         Row: {
@@ -82,14 +93,49 @@ export type Database = {
         Row: {
           id: string
           is_locked: boolean | null
+          table_id: string | null
         }
         Insert: {
           id?: string
           is_locked?: boolean | null
+          table_id?: string | null
         }
         Update: {
           id?: string
           is_locked?: boolean | null
+          table_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rows_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tables: {
+        Row: {
+          icon: string
+          id: string
+          main_color: string
+          name: string
+          sub_color: string
+        }
+        Insert: {
+          icon: string
+          id?: string
+          main_color: string
+          name: string
+          sub_color: string
+        }
+        Update: {
+          icon?: string
+          id?: string
+          main_color?: string
+          name?: string
+          sub_color?: string
         }
         Relationships: []
       }

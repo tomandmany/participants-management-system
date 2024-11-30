@@ -1,4 +1,4 @@
-// @/data/getMemberById.ts
+// @/data/get-member-by-id.ts
 import { supabase } from '@/lib/supabaseClient';
 
 export async function getMemberById(id: string): Promise<Todo[]> {

@@ -6,6 +6,7 @@ declare global {
   type Column = DB['public']['Tables']['columns']['Row'];
   type Row = DB['public']['Tables']['rows']['Row'];
   type Cell = DB['public']['Tables']['cells']['Row'];
+  type Table = DB['public']['Tables']['tables']['Row'];
   // type GroupData = {
   //   id: string;
   //   団体名: string;

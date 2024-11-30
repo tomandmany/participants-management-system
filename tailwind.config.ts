@@ -10,10 +10,7 @@ export default {
   theme: {
     extend: {
       boxShadow: {
-        'locked-cell': '2px 2px 2px rgba(0, 0, 0, 0.3)', // 右側の影
-        // 'locked-column': '2px 2px 2px rgba(0, 0, 0, 0.3)', // 右側の影
-        // 'locked-row': '2px 2px 2px rgba(0, 0, 0, 0.3)', // 下側の影
-        // 'locked-both': '2px 2px 2px rgba(0, 0, 0, 0.3)', // 右と下両方の影
+        'locked-cell': '2px 2px 2px rgba(0, 0, 0, 0.3)',
       },
       colors: {
         background: 'hsl(var(--background))',

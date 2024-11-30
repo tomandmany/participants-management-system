@@ -1,7 +1,7 @@
-// @/data/getCells.ts
+// @/data/get-cells.ts
 import { supabase } from '@/lib/supabaseClient';
 
-export async function getCells(): Promise<Cell[]> {
+export default async function getCells(): Promise<Cell[]> {
   const { data, error } = await supabase.from('cells').select('*');
 
   if (error) {

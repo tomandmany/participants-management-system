@@ -1,7 +1,7 @@
-// @/data/getRows.ts
+// @/data/get-rows.ts
 import { supabase } from '@/lib/supabaseClient';
 
-export async function getRows(): Promise<Row[]> {
+export default async function getRows(): Promise<Row[]> {
   const { data, error } = await supabase.from('rows').select('*');
 
   if (error) {

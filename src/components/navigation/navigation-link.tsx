@@ -4,13 +4,11 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
-import config from "@/data/getColor";
 
 interface NavigationProps {
-    id: string;
-    title: string;
-    href: string;
-    currentPath?: string;
+    member_id: string;
+    table: Table;
+    currentTableId?: string;
 }
 
 const LinkContent = ({
@@ -18,7 +16,7 @@ const LinkContent = ({
     isHovered,
     isActive,
     color,
-    Icon,
+    icon,
     onMouseEnter,
     onMouseLeave,
 }: {
@@ -26,7 +24,7 @@ const LinkContent = ({
     isHovered: boolean;
     isActive: boolean;
     color: string;
-    Icon: React.ComponentType<{ className?: string }> | null;
+    icon: string;
     onMouseEnter: () => void;
     onMouseLeave: () => void;
 }) => {
@@ -48,7 +46,21 @@ const LinkContent = ({
                                 backgroundColor: color,
                             }}
                         >
-                            {Icon && <Icon className="w-6 h-6 text-white transition group-hover:scale-150" />}
+                            {icon &&
+                                <div
+                                    className="w-6 h-6 bg-white transition group-hover:scale-150"
+                                    style={{
+                                        maskImage: `url(/icons/${icon}.svg)`,
+                                        WebkitMaskImage: `url(/icons/${icon}.svg)`, // Safari対応
+                                        maskSize: "contain",
+                                        WebkitMaskSize: "contain",
+                                        maskRepeat: "no-repeat",
+                                        WebkitMaskRepeat: "no-repeat",
+                                        maskPosition: "center",
+                                        WebkitMaskPosition: "center",
+                                    }}
+                                />
+                            }
                         </div>
                         <div>
                             <h2
@@ -70,32 +82,31 @@ const LinkContent = ({
     );
 };
 
-export default function NavigationLink({ id, title, href, currentPath }: NavigationProps) {
+export default function NavigationLink({ member_id, table, currentTableId }: NavigationProps) {
     const [isHovered, setIsHovered] = useState(false);
-    const { mainColor, Icon } = config[href as keyof typeof config] || config.default;
 
-    const isActive = currentPath === href;
+    const isActive = currentTableId === table.id;
 
     return isActive ? (
         <div>
             <LinkContent
-                title={title}
+                title={table.name}
                 isHovered={isHovered}
                 isActive={isActive}
-                color={mainColor}
-                Icon={Icon}
+                color={table.main_color}
+                icon={table.icon}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             />
         </div>
     ) : (
-        <Link href={`/${id}/${href}`} className="group">
+        <Link href={`/${member_id}/${table.id}`} className="group">
             <LinkContent
-                title={title}
+                title={table.name}
                 isHovered={isHovered}
                 isActive={isActive}
-                color={mainColor}
-                Icon={Icon}
+                color={table.main_color}
+                icon={table.icon}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             />
