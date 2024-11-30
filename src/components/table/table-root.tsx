@@ -63,6 +63,9 @@ export default function TableRoot({
     return () => window.removeEventListener("resize", updateTableRect);
   }, [columns, rows]);
 
+  const [isHoveredAddColumnButton, setIsHoveredAddColumnButton] = useState(false);
+  const [isHoveredAddRowButton, setIsHoveredAddRowButton] = useState(false);
+
   const handleCellUpdate = async (cellId: string, newValue: string) => {
     // サーバーアクションを呼び出して Supabase を更新
     const success = await updateCell(cellId, newValue);
@@ -299,33 +302,36 @@ export default function TableRoot({
           </DndContext>
         </div>
       </div>
-      {/* 行追加ボタン */}
       {tableRect && (
         <Button
-          className="p-3 w-fit h-fit shadow-md hover:shadow-lg z-10 hover:translate-y-1 hover:scale-[1.15] transition fixed"
+          className="p-3 w-fit h-fit shadow-md hover:shadow-lg z-10 fixed"
           style={{
             backgroundColor: mainColor,
             left: `${tableRect.left + tableRect.width / 2}px`,
             top: `${tableRect.bottom + 16}px`,
-            transform: "translateX(-50%)",
+            transform: `translateX(-50%) scale(${isHoveredAddRowButton ? 1.15 : 1})`,
+            transition: "transform 150ms, scale 150ms",
           }}
           onClick={handleAddRow}
+          onMouseEnter={() => setIsHoveredAddRowButton(true)}
+          onMouseLeave={() => setIsHoveredAddRowButton(false)}
         >
           <Plus className="min-w-6 min-h-6" />
         </Button>
       )}
-
-      {/* カラム追加ボタン */}
       {tableRect && (
         <Button
-          className="p-3 w-fit h-fit shadow-md hover:shadow-lg z-10 hover:translate-y-1 hover:scale-[1.15] transition fixed"
+          className="p-3 w-fit h-fit shadow-md hover:shadow-lg z-10 fixed"
           style={{
             backgroundColor: mainColor,
             left: `${tableRect.right + 16}px`,
             top: `${tableRect.top + tableRect.height / 2}px`,
-            transform: "translateY(-50%)",
+            transform: `translateY(-50%) scale(${isHoveredAddColumnButton ? 1.15 : 1})`,
+            transition: "transform 150ms, scale 150ms",
           }}
           onClick={handleAddColumn}
+          onMouseEnter={() => setIsHoveredAddColumnButton(true)}
+          onMouseLeave={() => setIsHoveredAddColumnButton(false)}
         >
           <Plus className="min-w-6 min-h-6" />
         </Button>
