@@ -14,21 +14,12 @@ export default function NavigationOpenModal({ member_id, tables, currentTable }:
   const [isNavigationOpenModal, setIsNavigationOpenModal] = useState(false);
   const [currentTableName, setCurrentTableName] = useState<string>('');
   const toggleButtonRef = useRef<HTMLDivElement>(null);
-  const [modalPosition, setModalPosition] = useState<number>(0);
 
   useEffect(() => {
     // ページ名をリアクティブに更新
     setCurrentTableName(currentTable.name);
     setIsNavigationOpenModal(false);
   }, [currentTable]);
-
-  useEffect(() => {
-    // トグルボタンの位置を取得してモーダルの位置を更新
-    if (toggleButtonRef.current) {
-      const rect = toggleButtonRef.current.getBoundingClientRect();
-      setModalPosition(rect.bottom + 16);
-    }
-  }, [isNavigationOpenModal]);
 
   return (
     <>
@@ -50,9 +41,6 @@ export default function NavigationOpenModal({ member_id, tables, currentTable }:
         </div>
         <div
           className={`${isNavigationOpenModal ? "opacity-100" : "opacity-0 pointer-events-none"} w-[70vw] grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-100 shadow-lg p-16 rounded-md absolute left-1/2 -translate-x-1/2 top-[calc(56px+16px)] z-20 transition-opacity duration-150 ease-in-out`}
-          // style={{
-          //   top: `${modalPosition}px`,
-          // }}
         >
           {tables.map((table) => (
             <NavigationLink key={table.id} member_id={member_id} table={table} currentTableId={currentTable.id} />
