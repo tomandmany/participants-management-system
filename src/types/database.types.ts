@@ -9,6 +9,60 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      cells: {
+        Row: {
+          column_id: string | null
+          id: string
+          row_id: string | null
+          value: string
+        }
+        Insert: {
+          column_id?: string | null
+          id?: string
+          row_id?: string | null
+          value: string
+        }
+        Update: {
+          column_id?: string | null
+          id?: string
+          row_id?: string | null
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cells_column_id_fkey"
+            columns: ["column_id"]
+            isOneToOne: false
+            referencedRelation: "columns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cells_row_id_fkey"
+            columns: ["row_id"]
+            isOneToOne: false
+            referencedRelation: "rows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      columns: {
+        Row: {
+          id: string
+          is_locked: boolean | null
+          name: string
+        }
+        Insert: {
+          id?: string
+          is_locked?: boolean | null
+          name: string
+        }
+        Update: {
+          id?: string
+          is_locked?: boolean | null
+          name?: string
+        }
+        Relationships: []
+      }
       members: {
         Row: {
           created_at: string
@@ -21,6 +75,21 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+        }
+        Relationships: []
+      }
+      rows: {
+        Row: {
+          id: string
+          is_locked: boolean | null
+        }
+        Insert: {
+          id?: string
+          is_locked?: boolean | null
+        }
+        Update: {
+          id?: string
+          is_locked?: boolean | null
         }
         Relationships: []
       }

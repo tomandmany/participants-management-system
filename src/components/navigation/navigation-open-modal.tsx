@@ -14,8 +14,8 @@ const pageName: Record<string, string> = {
   room: '教室',
 };
 
-export default function OpenNavigationModal() {
-  const [isOpenNavigationModal, setIsOpenNavigationModal] = useState(false);
+export default function NavigationOpenModal() {
+  const [isNavigationOpenModal, setIsNavigationOpenModal] = useState(false);
   const [currentPageName, setCurrentPageName] = useState("");
 
   const pathname = usePathname();
@@ -27,31 +27,30 @@ export default function OpenNavigationModal() {
   useEffect(() => {
     // ページ名をリアクティブに更新
     setCurrentPageName(pageName[currentPath] || "");
-    setIsOpenNavigationModal(false);
+    setIsNavigationOpenModal(false);
   }, [currentPath]);
 
   return (
     <>
-      {isOpenNavigationModal && (
+      {isNavigationOpenModal && (
         <div
           className="fixed inset-0 z-10"
-          onClick={() => setIsOpenNavigationModal(false)}
+          onClick={() => setIsNavigationOpenModal(false)}
         />
       )}
       <div
         className="flex flex-col relative mb-4"
       >
         <div
-          className="flex gap-2 w-fit text-nowrap bg-white shadow-md hover:shadow-lg p-4 rounded-lg cursor-pointer text-white font-black z-20 hover:translate-x-3 hover:-translate-y-1 hover:scale-[1.15] transition"
+          className="flex gap-2 w-fit text-nowrap bg-white shadow-md hover:shadow-lg p-4 rounded-lg cursor-pointer text-white font-black z-20 hover:translate-x-2 hover:-translate-y-1 hover:scale-[1.15] transition"
           style={{ backgroundColor: mainColor }}
-          onClick={() => setIsOpenNavigationModal(!isOpenNavigationModal)}
+          onClick={() => setIsNavigationOpenModal(!isNavigationOpenModal)}
         >
           <span>{currentPageName}</span>
-          {isOpenNavigationModal ? <ChevronDown size={24} /> : <ChevronLeft size={24} />}
+          {isNavigationOpenModal ? <ChevronDown size={24} /> : <ChevronLeft size={24} />}
         </div>
         <div
-          className={`grid grid-cols-1 md:grid-cols-2 gap-6 w-full mx-auto bg-gray-100 shadow-lg p-10 rounded-lg absolute z-20 top-[calc(56px+16px)] transition-opacity duration-150 ease-in-out ${isOpenNavigationModal ? "opacity-100" : "opacity-0 pointer-events-none"
-            }`}
+          className={`${isNavigationOpenModal ? "opacity-100" : "opacity-0 pointer-events-none"} w-full grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto bg-gray-100 shadow-lg p-10 rounded-lg absolute z-20 top-[calc(56px+16px)] transition-opacity duration-150 ease-in-out`}
         >
           <NavigationLink id={id} currentPath={currentPath} href="participants" title="参加団体" />
           <NavigationLink id={id} currentPath={currentPath} href="booth" title="模擬店" />

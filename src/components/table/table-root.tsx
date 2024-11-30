@@ -1,16 +1,19 @@
 'use client';
 
 import { Button } from "@/components/ui/button";
-import DraggableTableHead from "@/components/table/draggable-table-head";
+import TableDraggableHead from "@/components/table/table-draggable-head";
+import TableDraggableRow from "./table-draggable-row";
 import { Plus } from "lucide-react";
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter, UniqueIdentifier } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
-import { useState } from "react";
-import DraggableTableRow from "./draggable-table-row";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import config from "@/data/getColor";
 import { createPortal } from "react-dom";
 import { restrictToHorizontalAxis, restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { updateCell } from "@/actions/updateCell";
+import { insertRow } from "@/actions/insertRow";
+import { insertColumn } from "@/actions/insertColumn";
 
 interface DataTableProps {
   initialColumns: Column[];
@@ -38,22 +41,92 @@ export default function TableRoot({
 
   const { mainColor, subColor } = config[currentPath as keyof typeof config] || config.default;
 
-  // const saveData = useCallback(async () => {
-  //   await new Promise((resolve) => setTimeout(resolve, 500));
-  // }, [columns, rows, cells]);
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
 
-  // useEffect(() => {
-  //   const debounce = setTimeout(() => {
-  //     saveData();
-  //   }, 2000);
+  useEffect(() => {
+    // クライアントサイドでのみ document.body を参照
+    setPortalContainer(document.body);
+  }, []);
 
-  //   return () => clearTimeout(debounce);
-  // }, [columns, rows, cells, saveData]);
+  const tableRef = useRef<HTMLDivElement>(null);
+  const [tableRect, setTableRect] = useState<DOMRect | null>(null);
 
-  const handleCellUpdate = (cellId: string, newValue: string) => {
-    setCells((prev) =>
-      prev.map((cell) => (cell.id === cellId ? { ...cell, value: newValue } : cell))
-    );
+  useEffect(() => {
+    const updateTableRect = () => {
+      if (tableRef.current) {
+        setTableRect(tableRef.current.getBoundingClientRect());
+      }
+    };
+
+    updateTableRect();
+    window.addEventListener("resize", updateTableRect);
+    return () => window.removeEventListener("resize", updateTableRect);
+  }, [columns, rows]);
+
+  const handleCellUpdate = async (cellId: string, newValue: string) => {
+    // サーバーアクションを呼び出して Supabase を更新
+    const success = await updateCell(cellId, newValue);
+
+    if (!success) {
+      console.error(`Failed to update cell with ID: ${cellId}`);
+      // 必要に応じて状態を元に戻す
+    }
+  };
+
+  async function handleAddColumn() {
+    const sanitizedRows = rows.map((row) => ({
+      ...row,
+      is_locked: row.is_locked ?? false, // null を false に変換
+    }));
+
+    const newColumnId = await insertColumn(sanitizedRows);
+
+    if (newColumnId) {
+      console.log("New column inserted with ID:", newColumnId);
+
+      // クライアント側の状態に新しい列と対応するセルを追加
+      const newColumn = { id: newColumnId, name: `New Column`, is_locked: false };
+      setColumns((prev) => [...prev, newColumn]);
+
+      const newCells = rows.map((row) => ({
+        id: crypto.randomUUID(),
+        row_id: row.id,
+        column_id: newColumnId,
+        value: "",
+      }));
+      setCells((prev) => [...prev, ...newCells]);
+    } else {
+      console.error("Failed to insert new column");
+    }
+  }
+
+  async function handleAddRow() {
+    // columns を変換して渡す
+    const sanitizedColumns = columns.map((col) => ({
+      ...col,
+      is_locked: col.is_locked ?? false, // null を false に変換
+    }));
+
+    const newRowId = await insertRow(sanitizedColumns);
+
+    if (newRowId) {
+      console.log("New row inserted with ID:", newRowId);
+
+      // ローカル状態に新しい行を追加
+      const newRow = { id: newRowId, is_locked: false };
+      setRows((prev) => [...prev, newRow]);
+
+      // ローカル状態に新しいセルを追加
+      const newCells = columns.map((column) => ({
+        id: crypto.randomUUID(),
+        row_id: newRowId,
+        column_id: column.id,
+        value: "",
+      }));
+      setCells((prev) => [...prev, ...newCells]);
+    } else {
+      console.error("Failed to insert new row");
+    }
   }
 
   // 列の並び替え
@@ -71,10 +144,31 @@ export default function TableRoot({
   };
 
   const handleToggleColumnLock = (columnId: string) => {
-    setLockedColumnIds((prev) =>
-      prev.includes(columnId)
-        ? prev.filter((id) => id !== columnId)
-        : [...prev, columnId]
+    setColumns((prevColumns) => {
+      const columnToToggle = prevColumns.find((col) => col.id === columnId);
+      if (!columnToToggle) return prevColumns;
+
+      const isLocked = lockedColumnIds.includes(columnId);
+      let newColumns;
+
+      if (isLocked) {
+        // ロック解除：元の位置に戻す
+        newColumns = prevColumns.filter((col) => col.id !== columnId);
+        newColumns.splice(initialColumns.findIndex((col) => col.id === columnId), 0, columnToToggle);
+      } else {
+        // ロック：ロックされた列の最後に移動
+        const lockedColumns = prevColumns.filter((col) => lockedColumnIds.includes(col.id));
+        const unlockedColumns = prevColumns.filter((col) => !lockedColumnIds.includes(col.id) && col.id !== columnId);
+        newColumns = [...lockedColumns, columnToToggle, ...unlockedColumns];
+      }
+
+      return newColumns;
+    });
+
+    setLockedColumnIds((prevLockedIds) =>
+      prevLockedIds.includes(columnId)
+        ? prevLockedIds.filter((id) => id !== columnId)
+        : [...prevLockedIds, columnId]
     );
   };
 
@@ -112,20 +206,16 @@ export default function TableRoot({
   };
 
   return (
-    // <DndContext
-    //   collisionDetection={closestCenter}
-    //   onDragStart={handleDragStart}
-    //   onDragEnd={handleDragEnd}
-    // >
     <>
-      <div className="overflow-x-auto overflow-y-hidden rounded-md shadow-lg">
-        <div className="bg-white -m-[2px]">
+      <div className="overflow-x-auto overflow-y-hidden rounded-md shadow-lg max-w-6xl" ref={tableRef}>
+        <div className="bg-white">
           <div className="flex">
             <div
               className="min-w-[92px] p-2 sticky left-0 z-10 shadow-locked-cell"
               style={{ backgroundColor: mainColor }}
             />
             <DndContext
+              id='columns'
               modifiers={[restrictToHorizontalAxis]}
               collisionDetection={closestCenter}
               onDragStart={handleDragStart}
@@ -133,7 +223,7 @@ export default function TableRoot({
             >
               <SortableContext items={columns.map((col) => col.id as UniqueIdentifier)}>
                 {columns.map((column) => (
-                  <DraggableTableHead
+                  <TableDraggableHead
                     key={column.id}
                     column={column}
                     mainColor={mainColor}
@@ -142,26 +232,29 @@ export default function TableRoot({
                   />
                 ))}
               </SortableContext>
-              {createPortal(
-                <DragOverlay>
-                  {activeColumn ? (
-                    <DraggableTableHead
-                      column={activeColumn}
-                      mainColor={mainColor}
-                      lockedColumnIds={lockedColumnIds}
-                      handleToggleColumnLock={handleToggleColumnLock}
-                    />
-                  ) : null}
-                </DragOverlay>,
-                document.body
-              )}
+              {portalContainer &&
+                createPortal(
+                  <DragOverlay>
+                    {activeColumn ? (
+                      <TableDraggableHead
+                        column={activeColumn}
+                        mainColor={mainColor}
+                        lockedColumnIds={lockedColumnIds}
+                        handleToggleColumnLock={handleToggleColumnLock}
+                      />
+                    ) : null}
+                  </DragOverlay>,
+                  portalContainer
+                )
+              }
             </DndContext>
             {/* <div
-              className="min-w-[52px] p-2 sticky right-0 z-10 border-white -ml-px border-l"
-              style={{ backgroundColor: mainColor }}
-            /> */}
+                className="min-w-[52px] p-2 sticky right-0 z-10 border-white -ml-px border-l"
+                style={{ backgroundColor: mainColor }}
+              /> */}
           </div>
           <DndContext
+            id='rows'
             modifiers={[restrictToVerticalAxis]}
             collisionDetection={closestCenter}
             onDragStart={handleDragStart}
@@ -169,11 +262,12 @@ export default function TableRoot({
           >
             <SortableContext items={rows.map((row) => row.id as UniqueIdentifier)}>
               {rows.map((row) => (
-                <DraggableTableRow
+                <TableDraggableRow
                   key={row.id}
                   row={row}
                   columns={columns}
-                  cells={cells.filter((cell) => cell.rowId === row.id)}
+                  setCells={setCells}
+                  cells={cells.filter((cell) => cell.row_id === row.id)}
                   subColor={subColor}
                   lockedColumnIds={lockedColumnIds}
                   lockedRowIds={lockedRowIds}
@@ -182,31 +276,60 @@ export default function TableRoot({
                 />
               ))}
             </SortableContext>
-            {createPortal(
-              <DragOverlay>
-                {activeRow ? (
-                  <DraggableTableRow
-                    row={activeRow}
-                    columns={columns}
-                    cells={cells.filter((cell) => cell.rowId === activeRow.id)}
-                    subColor={subColor}
-                    lockedColumnIds={lockedColumnIds}
-                    lockedRowIds={lockedRowIds}
-                    handleToggleRowLock={handleToggleRowLock}
-                    handleCellUpdate={handleCellUpdate}
-                  />
-                ) : null}
-              </DragOverlay>,
-              document.body
-            )}
+            {portalContainer &&
+              createPortal(
+                <DragOverlay>
+                  {activeRow ? (
+                    <TableDraggableRow
+                      row={activeRow}
+                      columns={columns}
+                      cells={cells.filter((cell) => cell.row_id === activeRow.id)}
+                      setCells={setCells}
+                      subColor={subColor}
+                      lockedColumnIds={lockedColumnIds}
+                      lockedRowIds={lockedRowIds}
+                      handleToggleRowLock={handleToggleRowLock}
+                      handleCellUpdate={handleCellUpdate}
+                    />
+                  ) : null}
+                </DragOverlay>,
+                portalContainer
+              )
+            }
           </DndContext>
         </div>
       </div>
-      <div className="p-4">
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> Add Row
+      {/* 行追加ボタン */}
+      {tableRect && (
+        <Button
+          className="p-3 w-fit h-fit shadow-md hover:shadow-lg z-10 hover:translate-y-1 hover:scale-[1.15] transition fixed"
+          style={{
+            backgroundColor: mainColor,
+            left: `${tableRect.left + tableRect.width / 2}px`,
+            top: `${tableRect.bottom + 16}px`,
+            transform: "translateX(-50%)",
+          }}
+          onClick={handleAddRow}
+        >
+          <Plus className="min-w-6 min-h-6" />
         </Button>
-      </div>
+      )}
+
+      {/* カラム追加ボタン */}
+      {tableRect && (
+        <Button
+          className="p-3 w-fit h-fit shadow-md hover:shadow-lg z-10 hover:translate-y-1 hover:scale-[1.15] transition fixed"
+          style={{
+            backgroundColor: mainColor,
+            left: `${tableRect.right + 16}px`,
+            top: `${tableRect.top + tableRect.height / 2}px`,
+            transform: "translateY(-50%)",
+          }}
+          onClick={handleAddColumn}
+        >
+          <Plus className="min-w-6 min-h-6" />
+        </Button>
+      )}
     </>
   );
 }
