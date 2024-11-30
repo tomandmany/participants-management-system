@@ -6,16 +6,18 @@ import getColumnsByTableId from "@/data/get-columns-by-table-id";
 import getRowsByTableId from "@/data/get-rows-by-table-id";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     member_id: string;
     table_id: string;
-  };
+  }>;
 }
 
 export default async function Page({ params }: PageProps) {
-  const { member_id, table_id } = await params; // URLパラメーターから取得
+  // 非同期的に params を取得
+  const { member_id, table_id } = await params;
 
-  console.log(member_id, table_id);
+  console.log("Member ID:", member_id);
+  console.log("Table ID:", table_id);
 
   const tables = await getTables();
   if (!tables) {
