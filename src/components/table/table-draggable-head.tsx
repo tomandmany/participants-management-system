@@ -78,7 +78,7 @@ export default function TableDraggableHead({
     if (headRef.current) {
       setHeadRect(headRef.current.getBoundingClientRect());
     }
-  }, [headRef.current]);
+  }, []);
 
   useEffect(() => {
     if (isDragging) {

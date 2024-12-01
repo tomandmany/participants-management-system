@@ -1,7 +1,6 @@
 import TableRoot from "@/components/table/table-root";
 import NavigationOpenModal from "@/components/navigation/navigation-open-modal";
 import getTables from "@/data/get-tables";
-import getCells from "@/data/get-cells";
 import getColumnsByTableId from "@/data/get-columns-by-table-id";
 import getRowsByTableId from "@/data/get-rows-by-table-id";
 import getCellsByTableId from "@/data/get-cells-by-table-id";
