@@ -409,11 +409,8 @@ export default function TableRoot({
                     key={row.id}
                     row={row}
                     rowsLength={sortedRows.length}
-                    columns={sortedColumns}
                     setCells={setCells}
-                    cells={cells.filter((cell) => cell.row_id === row.id)}
                     subColor={currentTable.sub_color}
-                    lockedColumnIds={lockedColumnIds}
                     lockedRowIds={lockedRowIds}
                     handleToggleRowLock={handleToggleRowLock}
                     handleCellUpdate={handleCellUpdate}
@@ -427,11 +424,8 @@ export default function TableRoot({
                     <TableDraggableRow
                       row={activeRow}
                       rowsLength={sortedRows.length}
-                      columns={sortedColumns}
-                      cells={cells.filter((cell) => cell.row_id === activeRow.id)}
                       setCells={setCells}
                       subColor={currentTable.sub_color}
-                      lockedColumnIds={lockedColumnIds}
                       lockedRowIds={lockedRowIds}
                       handleToggleRowLock={handleToggleRowLock}
                       handleCellUpdate={handleCellUpdate}
