@@ -4,6 +4,7 @@ import getTables from "@/data/get-tables";
 import getCells from "@/data/get-cells";
 import getColumnsByTableId from "@/data/get-columns-by-table-id";
 import getRowsByTableId from "@/data/get-rows-by-table-id";
+import getCellsByTableId from "@/data/get-cells-by-table-id";
 
 interface PageProps {
   params: Promise<{
@@ -13,11 +14,7 @@ interface PageProps {
 }
 
 export default async function Page({ params }: PageProps) {
-  // 非同期的に params を取得
   const { member_id, table_id } = await params;
-
-  console.log("Member ID:", member_id);
-  console.log("Table ID:", table_id);
 
   const tables = await getTables();
   if (!tables) {
@@ -31,7 +28,10 @@ export default async function Page({ params }: PageProps) {
 
   const columns = await getColumnsByTableId(table_id);
   const rows = await getRowsByTableId(table_id);
-  const cells = await getCells();
+
+  const columnIds = columns.map((col) => col.id);
+  const rowIds = rows.map((row) => row.id);
+  const cells = await getCellsByTableId(columnIds, rowIds);
 
   return (
     <div className="mx-auto py-10 w-fit">

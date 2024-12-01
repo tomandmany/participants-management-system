@@ -8,6 +8,7 @@ import { useSortable } from "@dnd-kit/sortable";
 
 interface TableDraggableRowProps {
   row: Row;
+  rowsLength: number;
   columns: Column[];
   cells: Cell[];
   setCells: React.Dispatch<React.SetStateAction<Cell[]>>;
@@ -20,6 +21,7 @@ interface TableDraggableRowProps {
 
 export default function TableDraggableRow({
   row,
+  rowsLength,
   columns,
   cells,
   setCells,
@@ -61,13 +63,13 @@ export default function TableDraggableRow({
 
   const handleBlur = (cellId: string, value: string) => {
     handleCellUpdate(cellId, value); // サーバーに更新
-  
+
     // document.activeElement を HTMLElement として扱う
     const activeElement = document.activeElement as HTMLElement | null;
     if (activeElement?.blur) {
       activeElement.blur(); // フォーカスを外す
     }
-  };  
+  };
 
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
@@ -88,67 +90,82 @@ export default function TableDraggableRow({
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex ${isDragging ? "opacity-40" : ""}`}
+      className={`${isDragging ? "opacity-40" : ""} ${row.order !== rowsLength - 1 ? 'border-b' : ''} min-h-[60px] h-[60px] min-w-[92px] p-2 sticky left-0 z-10 flex items-center justify-center gap-2 cursor-default shadow-locked-cell`}
     >
-      <div
-        className="min-w-[92px] p-2 sticky left-0 z-10 flex items-center justify-center gap-2 border-b cursor-default shadow-locked-cell"
-        style={{ backgroundColor: subColor }}
-      >
-        <span
-          {...attributes}
-          {...listeners}
-          className={`${
-            lockedRowIds.includes(row.id) ? "cursor-not-allowed" : "cursor-grab"
+      <span
+        {...attributes}
+        {...listeners}
+        className={`${lockedRowIds.includes(row.id) ? "cursor-not-allowed" : "cursor-grab"
           }`}
-        >
-          <GripVertical />
-        </span>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => handleToggleRowLock(row.id)}
-          // aria-label={`${
-          //   lockedRowIds.includes(row.id) ? "Unfreeze" : "Freeze"
-          // } row ${row.id}`}
-        >
-          {lockedRowIds.includes(row.id) ? <Lock /> : <Unlock />}
-        </Button>
-      </div>
-      {columns.map((column) => {
-        const cell = cells.find(
-          (c) => c.row_id === row.id && c.column_id === column.id
-        );
-        if (!cell) return null;
-        return (
-          <div
-            key={column.id}
-            className={`${lockedColumnIds.includes(column.id)
-              ? "sticky left-0 z-10 shadow-locked-cell"
-              : isDragging
-              ? "border-r-transparent"
-              : "[&:not(:last-child)]:border-r"
-            } ${
-              lockedRowIds.includes(row.id) ? "shadow-locked-cell" : "border-b"
-            } hidden min-w-[192px] w-[192px] px-4 py-3 sm:flex justify-center items-center`}
-            style={{
-              backgroundColor:
-                lockedColumnIds.includes(column.id) ||
-                lockedRowIds.includes(row.id)
-                  ? subColor
-                  : "#f9fafb",
-            }}
-          >
-            <Input
-              value={cell.value || ""}
-              onChange={(e) => handleChange(cell.id, e.target.value)} // 即時反映
-              onBlur={(e) => handleBlur(cell.id, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(e, cell.id, e.currentTarget.value)}
-              // aria-label={`${column.name} for row ${row.id}`}
-              className="bg-white hover:scale-105 transition hover:shadow-md"
-            />
-          </div>
-        );
-      })}
+      >
+        <GripVertical />
+      </span>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => handleToggleRowLock(row.id)}
+      >
+        {lockedRowIds.includes(row.id) ? <Lock /> : <Unlock />}
+      </Button>
     </div>
+    // <div
+    //   ref={setNodeRef}
+    //   style={style}
+    //   className={`${isDragging ? "opacity-40" : ""} flex min-h-[60px] h-[60px]`}
+    // >
+    //   <div
+    //     className="min-w-[92px] p-2 sticky left-0 z-10 flex items-center justify-center gap-2 cursor-default shadow-locked-cell [&:not(:last-child)]:border-b"
+    //     style={{ backgroundColor: subColor }}
+    //   >
+    //     <span
+    //       {...attributes}
+    //       {...listeners}
+    //       className={`${lockedRowIds.includes(row.id) ? "cursor-not-allowed" : "cursor-grab"
+    //         }`}
+    //     >
+    //       <GripVertical />
+    //     </span>
+    //     <Button
+    //       variant="outline"
+    //       size="icon"
+    //       onClick={() => handleToggleRowLock(row.id)}
+    //     >
+    //       {lockedRowIds.includes(row.id) ? <Lock /> : <Unlock />}
+    //     </Button>
+    //   </div>
+    //   {/* {columns.map((column) => {
+    //     const cell = cells.find(
+    //       (c) => c.row_id === row.id && c.column_id === column.id
+    //     );
+    //     if (!cell) return null;
+    //     return (
+    //       <div
+    //         key={column.id}
+    //         className={`${lockedColumnIds.includes(column.id)
+    //           ? "sticky left-0 z-10 shadow-locked-cell"
+    //           : isDragging
+    //             ? "border-r-transparent"
+    //             : "[&:not(:last-child)]:border-r"
+    //           } ${lockedRowIds.includes(row.id) ? "shadow-locked-cell" : "border-b"
+    //           } hidden min-w-[192px] w-[192px] px-4 py-3 sm:flex justify-center items-center`}
+    //         style={{
+    //           backgroundColor:
+    //             lockedColumnIds.includes(column.id) ||
+    //               lockedRowIds.includes(row.id)
+    //               ? subColor
+    //               : "#f9fafb",
+    //         }}
+    //       >
+    //         <Input
+    //           value={cell.value || ""}
+    //           onChange={(e) => handleChange(cell.id, e.target.value)} // 即時反映
+    //           onBlur={(e) => handleBlur(cell.id, e.target.value)}
+    //           onKeyDown={(e) => handleKeyDown(e, cell.id, e.currentTarget.value)}
+    //           className="bg-white hover:scale-105 transition hover:shadow-md"
+    //         />
+    //       </div>
+    //     );
+    //   })} */}
+    // </div>
   );
 }

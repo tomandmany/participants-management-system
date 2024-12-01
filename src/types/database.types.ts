@@ -50,18 +50,21 @@ export type Database = {
           id: string
           is_locked: boolean | null
           name: string
+          order: number
           table_id: string | null
         }
         Insert: {
           id?: string
           is_locked?: boolean | null
           name: string
+          order: number
           table_id?: string | null
         }
         Update: {
           id?: string
           is_locked?: boolean | null
           name?: string
+          order?: number
           table_id?: string | null
         }
         Relationships: [
@@ -93,16 +96,19 @@ export type Database = {
         Row: {
           id: string
           is_locked: boolean | null
+          order: number
           table_id: string | null
         }
         Insert: {
           id?: string
           is_locked?: boolean | null
+          order: number
           table_id?: string | null
         }
         Update: {
           id?: string
           is_locked?: boolean | null
+          order?: number
           table_id?: string | null
         }
         Relationships: [

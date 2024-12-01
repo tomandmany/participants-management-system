@@ -2,11 +2,11 @@
 
 import { supabase } from "@/lib/supabaseClient";
 
-export async function insertColumn(rows: Row[], currentTable_id: string): Promise<string | null> {
+export async function insertColumn(rows: Row[], currentTable_id: string, column_length: number): Promise<string | null> {
   // 新しい列を追加
   const { data: column, error: columnError } = await supabase
     .from("columns")
-    .insert({ name: `New Column`, is_locked: false, table_id: currentTable_id }) // 必要に応じて名前やロック状態を変更
+    .insert({ name: `New Column`, is_locked: false, table_id: currentTable_id, order: column_length + 1 }) // 必要に応じて名前やロック状態を変更
     .select("id")
     .single();
 
