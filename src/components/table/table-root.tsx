@@ -409,11 +409,9 @@ export default function TableRoot({
                     key={row.id}
                     row={row}
                     rowsLength={sortedRows.length}
-                    setCells={setCells}
                     subColor={currentTable.sub_color}
                     lockedRowIds={lockedRowIds}
                     handleToggleRowLock={handleToggleRowLock}
-                    handleCellUpdate={handleCellUpdate}
                   />
                 ))}
             </SortableContext>
@@ -424,11 +422,9 @@ export default function TableRoot({
                     <TableDraggableRow
                       row={activeRow}
                       rowsLength={sortedRows.length}
-                      setCells={setCells}
                       subColor={currentTable.sub_color}
                       lockedRowIds={lockedRowIds}
                       handleToggleRowLock={handleToggleRowLock}
-                      handleCellUpdate={handleCellUpdate}
                     />
                   ) : null}
                 </DragOverlay>,

@@ -8,21 +8,17 @@ import { useSortable } from "@dnd-kit/sortable";
 interface TableDraggableRowProps {
   row: Row;
   rowsLength: number;
-  setCells: React.Dispatch<React.SetStateAction<Cell[]>>;
   subColor: string;
   lockedRowIds: string[];
   handleToggleRowLock: (rowId: string) => void;
-  handleCellUpdate: (cellId: string, newValue: string) => void;
 }
 
 export default function TableDraggableRow({
   row,
   rowsLength,
-  setCells,
   subColor,
   lockedRowIds,
   handleToggleRowLock,
-  handleCellUpdate,
 }: TableDraggableRowProps) {
   const {
     attributes,
