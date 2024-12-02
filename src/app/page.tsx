@@ -7,7 +7,7 @@ export default async function Home() {
   const tables = await getTables();
 
   return (
-    <div className="container px-8 py-16 space-y-16 mx-auto">
+    <div className="container px-8 pb-16 space-y-16 mx-auto">
       <h1 className="text-3xl sm:text-4xl font-black text-center text-gray-800">
         参加団体情報管理アプリ
       </h1>

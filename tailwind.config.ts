@@ -14,6 +14,7 @@ export default {
         'cell': '0 0 5px rgba(0, 0, 0, .3)',
         'dragging': '0 0 10px rgba(0, 0, 0, 1)',
         'button': '0 0 5px rgba(255, 255, 255, 1)',
+        'button-dark': '0 0 5px rgba(0, 0, 0, .5)',
       },
       colors: {
         background: 'hsl(var(--background))',

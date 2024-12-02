@@ -16,12 +16,6 @@ import { Input } from "@/components/ui/input";
 import { updateColumnOrder } from "@/actions/updateColumnOrder";
 import { updateRowOrder } from "@/actions/updateRowOrder";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -311,7 +305,7 @@ export default function TableRoot({
   return (
     <>
       <div
-        className="overflow-x-auto overflow-y-hidden rounded-md shadow-lg max-h-[calc(100px*8+50px)] max-w-[85vw] grid"
+        className="overflow-x-auto overflow-y-hidden rounded-md shadow-lg max-h-[calc(100px*5+50px)] max-w-[85vw] grid"
         ref={tableRef}
         style={{
           gridTemplateColumns: "100px 1fr", // 1列目は固定幅、2列目は残りスペース
@@ -474,31 +468,17 @@ export default function TableRoot({
                             ? 'hidden' : undefined,
                       }}
                     >
-                      {/* <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger className="absolute right-1 top-1">
-                            
-                          </TooltipTrigger>
-                          <TooltipContent className="bg-white shadow-lg">
-                            <p className="font-bold" style={{ color: currentTable.main_color }}>
-                              コメントする
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider> */}
                       <Popover>
                         <PopoverTrigger className="absolute right-1 top-1">
                           <MessageCirclePlus
                             size={24}
-                            className="text-gray-400 p-1 rounded-sm hover:cursor-pointer transition hover:scale-[1.15]"
+                            className="text-gray-400 p-1 rounded-sm hover:cursor-pointer transition hover:scale-[1.15] hover:shadow-button-dark"
                             onMouseEnter={(e) => {
                               // マウスオーバー時にシャドウを変更
-                              (e.target as HTMLElement).style.boxShadow = "0 0 3px rgba(0, 0, 0, .5)";
                               (e.target as HTMLElement).style.color = currentTable.main_color;
                             }}
                             onMouseLeave={(e) => {
                               // マウスアウト時に元のシャドウに戻す
-                              (e.target as HTMLElement).style.boxShadow = "none";
                               (e.target as HTMLElement).style.color = '#9ca3af';
                             }}
                           />
