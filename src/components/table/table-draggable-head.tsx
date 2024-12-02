@@ -2,7 +2,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Lock, MoveHorizontal, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSortable } from "@dnd-kit/sortable";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "../ui/input";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { updateColumnName } from "@/actions/updateColumnName";
@@ -18,7 +18,6 @@ interface TableDraggableHeadProps {
   sortedColumns: Column[];
   cells: Cell[];
   overIds: UniqueIdentifier[]; // オーバーされた複数のカラムID
-  setOverIds: Dispatch<SetStateAction<UniqueIdentifier[]>>; // 複数のオーバーカラムIDを設定
 }
 
 const hexToRgba = (hex: string, alpha: number): string => {
@@ -40,7 +39,6 @@ export default function TableDraggableHead({
   sortedColumns,
   cells,
   overIds,
-  setOverIds,
 }: TableDraggableHeadProps) {
   const {
     attributes,

@@ -338,7 +338,6 @@ export default function TableRoot({
                     sortedColumns={sortedColumns}
                     cells={cells}
                     overIds={overIds}
-                    setOverIds={setOverIds}
                   />
                 ))}
             </SortableContext>
@@ -358,7 +357,6 @@ export default function TableRoot({
                         sortedColumns={sortedColumns}
                         cells={cells}
                         overIds={overIds}
-                        setOverIds={setOverIds}
                       />
                       {sortedRows.map((row) => {
                         const column = sortedColumns.find((col) => col.id === activeColumn.id);

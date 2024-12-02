@@ -37,7 +37,7 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <>
-      <Link href={'/'} className="fixed top-4 left-4 hover:shadow-button-dark rounded-full p-4 transition">
+      <Link href={'/'} className="fixed top-4 left-4 hover:shadow-button-dark rounded-full p-4 transition hover:scale-125">
         <Undo2 />
       </Link>
       <div className="mx-auto w-fit">
