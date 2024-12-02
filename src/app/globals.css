@@ -70,3 +70,31 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.comment-bubble {
+  position: relative;
+  display: inline-block;
+  padding: 16px;
+  border: 2px solid #000000;
+  border-radius: 12px;
+  text-align: left;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #000000;
+  min-width: 80%;
+}
+
+.comment-bubble-tail-back {
+  content: "";
+  position: absolute;
+  top: 30%;
+  border-style: solid;
+}
+
+.comment-bubble-tail-front {
+  content: "";
+  position: absolute;
+  top: 30%;
+  border-style: solid;
+}

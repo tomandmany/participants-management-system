@@ -1,6 +1,6 @@
 'use client';
 
-import { GripVertical, Lock, Unlock } from "lucide-react";
+import { Lock, MoveVertical, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
@@ -46,7 +46,7 @@ export default function TableDraggableRow({
     <div
       ref={setNodeRef}
       style={style}
-      className={`${isDragging ? "opacity-40" : ""} ${row.order !== rowsLength - 1 ? 'border-b' : ''} min-h-[60px] h-[60px] min-w-[92px] p-2 sticky left-0 z-10 flex items-center justify-center gap-2 cursor-default shadow-locked-cell`}
+      className={`${isDragging ? "opacity-40" : ""} ${row.order !== rowsLength - 1 ? 'border-b' : ''} min-h-[100px] h-[100px] min-w-[100px] p-2 sticky left-0 z-10 flex items-center justify-center gap-2 cursor-default shadow-locked-cell`}
     >
       <span
         {...attributes}
@@ -54,12 +54,13 @@ export default function TableDraggableRow({
         className={`${lockedRowIds.includes(row.id) ? "cursor-not-allowed" : "cursor-grab"
           }`}
       >
-        <GripVertical />
+        <MoveVertical className="min-w-6 min-h-6 text-white hover:shadow-button transition rounded-lg p-1" />
       </span>
       <Button
-        variant="outline"
+        variant="ghost"
         size="icon"
         onClick={() => handleToggleRowLock(row.id)}
+        className={`${lockedRowIds.includes(row.id) ? 'border-white' : 'border-transparent'} border-[1.5px] h-2 w-2 p-4 text-white hover:bg-transparent hover:text-white shadow-black hover:shadow-button transition`}
       >
         {lockedRowIds.includes(row.id) ? <Lock /> : <Unlock />}
       </Button>

@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import TableDraggableHead from "@/components/table/table-draggable-head";
 import TableDraggableRow from "./table-draggable-row";
-import { Plus } from "lucide-react";
+import { MessageCirclePlus, Plus } from "lucide-react";
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter, UniqueIdentifier, DragMoveEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 import { useEffect, useRef, useState } from "react";
@@ -15,6 +15,18 @@ import { insertColumn } from "@/actions/insertColumn";
 import { Input } from "@/components/ui/input";
 import { updateColumnOrder } from "@/actions/updateColumnOrder";
 import { updateRowOrder } from "@/actions/updateRowOrder";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import CommentBubbleRight, { CommentBubbleLeft } from "../comment/comment-bubble";
 
 interface DataTableProps {
   currentTable: Table;
@@ -143,16 +155,16 @@ export default function TableRoot({
   async function handleReorderColumns(activeId: UniqueIdentifier, overIds: UniqueIdentifier) {
     const oldIndex = sortedColumns.findIndex((col) => col.id === activeId.toString());
     const newIndex = sortedColumns.findIndex((col) => col.id === overIds.toString());
-  
+
     if (oldIndex !== -1 && newIndex !== -1) {
       // 並び替えた結果を作成し、order を更新
       const updatedColumns = arrayMove(sortedColumns, oldIndex, newIndex).map((col, index) => ({
         ...col,
         order: index, // 新しい順序を order に設定
       }));
-  
+
       setSortedColumns(updatedColumns);
-  
+
       // サーバーの更新処理（データベース）
       const success = await updateColumnOrder(updatedColumns);
       if (!success) {
@@ -160,7 +172,7 @@ export default function TableRoot({
         return;
       }
     }
-  }  
+  }
 
   async function handleReorderRows(activeId: UniqueIdentifier, overIds: UniqueIdentifier) {
     const oldIndex = sortedRows.findIndex((row) => row.id === activeId.toString());
@@ -299,14 +311,14 @@ export default function TableRoot({
   return (
     <>
       <div
-        className="overflow-x-auto overflow-y-hidden rounded-md shadow-lg max-w-6xl grid"
+        className="overflow-x-auto overflow-y-hidden rounded-md shadow-lg max-h-[calc(100px*8+50px)] max-w-[85vw] grid"
         ref={tableRef}
         style={{
-          gridTemplateColumns: "92px 1fr", // 1列目は固定幅、2列目は残りスペース
+          gridTemplateColumns: "100px 1fr", // 1列目は固定幅、2列目は残りスペース
         }}
       >
         <div
-          className="min-w-[92px] w-[92px] min-h-[42px] h-[42px] p-2 sticky left-0 z-[1] shadow-locked-cell"
+          className="min-w-[100px] w-[100px] min-h-[50px] h-[50px] p-2 sticky left-0 top-0 z-[1] shadow-locked-cell"
           style={{ backgroundColor: currentTable.main_color }}
         />
         <div className="flex min-w-full">
@@ -367,11 +379,11 @@ export default function TableRoot({
                             key={`${row.id}-${column.id}`}
                             aria-label={`${column.name} ${row.id}`}
                             className={`${row.order !== sortedRows.length - 1 ? "border-b" : ""
-                              } px-4 py-3 border-gray-300 flex items-center justify-center min-h-[60px] h-[60px]`}
+                              } px-4 py-3 border-gray-300 flex items-center justify-center min-h-[100px] h-[100px]`}
                             style={{
                               backgroundColor: lockedRowIds.includes(row.id)
                                 ? currentTable.sub_color
-                                : "white",
+                                : "#F3F4F6",
                             }}
                           >
                             <Input
@@ -381,7 +393,7 @@ export default function TableRoot({
                               onKeyDown={(e) =>
                                 handleKeyDown(e, cell?.id || "", cell?.value || "")
                               }
-                              className="w-full"
+                              className="w-full bg-white"
                             />
                           </div>
                         );
@@ -436,7 +448,7 @@ export default function TableRoot({
         <div
           className='grid'
           style={{
-            gridTemplateColumns: `repeat(${sortedColumns.length}, minmax(192px, 1fr))`, // 各列の幅を設定
+            gridTemplateColumns: `repeat(${sortedColumns.length}, minmax(200px, 1fr))`, // 各列の幅を設定
             gridAutoRows: "auto", // 各行の高さを自動調整
           }}
         >
@@ -452,9 +464,9 @@ export default function TableRoot({
                     <div
                       key={`${row.id}-${column.id}`}
                       aria-label={`${column.name} ${row.id}`}
-                      className={`${row.order !== sortedRows.length - 1 ? 'border-b' : ''} ${column.order !== sortedColumns.length - 1 ? 'border-r' : ''} px-4 py-3 border-gray-300 flex items-center justify-center min-h-[60px] h-[60px]`}
+                      className={`${row.order !== sortedRows.length - 1 ? 'border-b' : ''} ${column.order !== sortedColumns.length - 1 ? 'border-r' : ''} px-4 py-3 border-gray-300 flex items-center justify-center min-h-[100px] h-[100px] relative`}
                       style={{
-                        backgroundColor: lockedRowIds.includes(row.id) || lockedColumnIds.includes(column.id) ? currentTable.sub_color : "white",
+                        backgroundColor: lockedRowIds.includes(row.id) || lockedColumnIds.includes(column.id) ? currentTable.sub_color : "#F3F4F6",
                         visibility:
                           activeColumn?.id === column.id && isDraggingColumn
                             ||
@@ -462,6 +474,42 @@ export default function TableRoot({
                             ? 'hidden' : undefined,
                       }}
                     >
+                      {/* <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger className="absolute right-1 top-1">
+                            
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-white shadow-lg">
+                            <p className="font-bold" style={{ color: currentTable.main_color }}>
+                              コメントする
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider> */}
+                      <Popover>
+                        <PopoverTrigger className="absolute right-1 top-1">
+                          <MessageCirclePlus
+                            size={24}
+                            className="text-gray-400 p-1 rounded-sm hover:cursor-pointer transition hover:scale-[1.15]"
+                            onMouseEnter={(e) => {
+                              // マウスオーバー時にシャドウを変更
+                              (e.target as HTMLElement).style.boxShadow = "0 0 3px rgba(0, 0, 0, .5)";
+                              (e.target as HTMLElement).style.color = currentTable.main_color;
+                            }}
+                            onMouseLeave={(e) => {
+                              // マウスアウト時に元のシャドウに戻す
+                              (e.target as HTMLElement).style.boxShadow = "none";
+                              (e.target as HTMLElement).style.color = '#9ca3af';
+                            }}
+                          />
+                        </PopoverTrigger>
+                        <PopoverContent
+                          className="relative border-2 space-y-4"
+                        >
+                          <CommentBubbleLeft table={currentTable} initialComment={'コメント'} />
+                          <CommentBubbleRight table={currentTable} initialComment={'コメント'} />
+                        </PopoverContent>
+                      </Popover>
                       <Input
                         value={cell?.value || ""}
                         onChange={(e) => handleChange(cell?.id || "", e.target.value)}
@@ -469,7 +517,7 @@ export default function TableRoot({
                         onKeyDown={(e) =>
                           handleKeyDown(e, cell?.id || "", cell?.value || "")
                         }
-                        className="w-full bg-white"
+                        className="w-full bg-white hover:shadow-cell hover:scale-105 transition hover:cursor-pointer focus:cursor-text"
                       />
                     </div>
                   );
@@ -479,23 +527,27 @@ export default function TableRoot({
       </div>
       {tableRect && (
         <>
+          {sortedRows.length < 8 ? (
+            <Button
+              className="p-3 w-fit h-fit shadow-button hover:shadow-lg z-10 fixed"
+              style={{
+                backgroundColor: currentTable.main_color,
+                left: `${tableRect.left + tableRect.width / 2}px`,
+                top: `${tableRect.bottom + 16}px`,
+                transform: `translateX(-50%) scale(${isHoveredAddRowButton ? 1.15 : 1})`,
+                transition: "transform 150ms, scale 150ms",
+              }}
+              onClick={handleAddRow}
+              onMouseEnter={() => setIsHoveredAddRowButton(true)}
+              onMouseLeave={() => setIsHoveredAddRowButton(false)}
+            >
+              <Plus className="min-w-6 min-h-6" />
+            </Button>
+          ) : (
+            <>ページを送るボタン</>
+          )}
           <Button
-            className="p-3 w-fit h-fit shadow-md hover:shadow-lg z-10 fixed"
-            style={{
-              backgroundColor: currentTable.main_color,
-              left: `${tableRect.left + tableRect.width / 2}px`,
-              top: `${tableRect.bottom + 16}px`,
-              transform: `translateX(-50%) scale(${isHoveredAddRowButton ? 1.15 : 1})`,
-              transition: "transform 150ms, scale 150ms",
-            }}
-            onClick={handleAddRow}
-            onMouseEnter={() => setIsHoveredAddRowButton(true)}
-            onMouseLeave={() => setIsHoveredAddRowButton(false)}
-          >
-            <Plus className="min-w-6 min-h-6" />
-          </Button>
-          <Button
-            className="p-3 w-fit h-fit shadow-md hover:shadow-lg z-10 fixed"
+            className="p-3 w-fit h-fit shadow-button hover:shadow-lg z-10 fixed"
             style={{
               backgroundColor: currentTable.main_color,
               left: `${tableRect.right + 16}px`,

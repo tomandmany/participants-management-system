@@ -11,7 +11,9 @@ export default {
     extend: {
       boxShadow: {
         'locked-cell': '2px 2px 2px rgba(0, 0, 0, 0.3)',
+        'cell': '0 0 5px rgba(0, 0, 0, .3)',
         'dragging': '0 0 10px rgba(0, 0, 0, 1)',
+        'button': '0 0 5px rgba(255, 255, 255, 1)',
       },
       colors: {
         background: 'hsl(var(--background))',
